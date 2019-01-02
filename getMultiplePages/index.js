@@ -8,4 +8,4 @@ movie('bat').then(function(v){
     res.sort().forEach((element, i) => {
         console.log("Result " + (i+1) + ": " + element)
     });
-});
+}).catch(err=>console.log(err));

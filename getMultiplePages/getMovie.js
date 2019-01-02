@@ -56,6 +56,9 @@ async function get(substr){
                 Promise.all(subPages).then(function(){
                     console.log("all resolved ");
                     resolve(allTitles);
+                }).catch(err=>{
+                    console.error(JSON.stringify(err, null, 2));
+                    reject(err);
                 })
 
                 
