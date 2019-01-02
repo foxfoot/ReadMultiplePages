@@ -5,7 +5,7 @@ let url =  "https://jsonmock.hackerrank.com/api/movies/search/?Title=";
 let allTitles = [];
 
 function getOnePage(fullURL){
-    return new Promise(function(resolve){
+    return new Promise(function(resolve, reject){
     /*if(!(typeof pageIndex === "number" && Number.isInteger(pageIndex) && pageIndex>0)){
         throw new Error('pageIndex is not a valid number.');
     }
@@ -29,13 +29,14 @@ function getOnePage(fullURL){
                 resolve();
             });
         }).on('error', function(e){
-                console.log("Got an error: ", e);
+                console.error("Got an error: ", e);
+                reject(e);
         })
     });
 }
 
 async function get(substr){
-    return new Promise(function(resolve){
+    return new Promise(function(resolve, reject){
         const fullURL = url + substr;
         console.log(fullURL);
         https.get(fullURL, function(res){
@@ -46,8 +47,19 @@ async function get(substr){
             });
         
             res.on('end', function(){
-                const pageContent = JSON.parse(body);
-                
+                let pageContent;
+                try{
+                    pageContent = JSON.parse(body);
+                }catch(e){
+                    reject(e);
+                    return;
+                }
+
+                if(!pageContent || !pageContent.total_pages || !Number.isInteger(pageContent.total_pages)){
+                    console.error("Cannot get the total page number.");
+                    reject(new Error("Cannot get the total page number."))
+                }
+
                 let subPages = [];
                 for(let i=1; i<=pageContent.total_pages; ++i){
                     subPages.push(getOnePage(url + substr + "&page=" + i));
@@ -63,8 +75,9 @@ async function get(substr){
 
                 
             });
-        }).on('error', function(e){
-                console.log("Got an error: ", e);
+        }).on('error', function(err){
+                console.error("Got an error: ", err);
+                reject(err)
         });
     });
 }
